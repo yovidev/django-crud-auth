@@ -3,6 +3,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
+from .forms import TaskForm
+from .models import Task
 
 
 # Create your views here.
@@ -39,12 +41,29 @@ def signup(request):
         
         
 def tasks(request):
-    return render(request, 'tasks.html')
+    tasks = Task.objects.filter(user = request.user)
+    return render(request, 'tasks.html',{'tasks':tasks})
 
 
 
 def create_task(request):
-    return render(request, 'create_task.html')
+    if request.method == 'GET':
+        return render(request, 'create_task.html',{
+                        'form': TaskForm
+        })
+
+    else:
+        try:
+            form = TaskForm(request.POST)
+            new_task = form.save(commit= False)
+            new_task.user = request.user
+            new_task.save()
+            return redirect('tasks')   
+        except ValueError:
+            return render(request, 'create_task.html',{
+                'form':TaskForm,
+                'error':'Por favor introduzca datos correctos'
+            })    
 
 
 
@@ -72,5 +91,5 @@ def signin(request):
         
 
             
-              
+  ## Tiempo del video 1h.44m            
                 
